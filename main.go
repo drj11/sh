@@ -21,6 +21,9 @@ func main() {
 	for _, cmd := range cmds {
 		cmd.Start()
 	}
+	// XCU7: 2.9.2 "the shell shall wait for the last command
+	// specified in the pipeline to complete, and may also wait
+	// for all commands to complete."
 	for _, cmd := range cmds {
 		cmd.Wait()
 	}

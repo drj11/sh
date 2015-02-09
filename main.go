@@ -8,13 +8,20 @@ import (
 )
 
 func main() {
-	cmd1 := exec.Command("ls", "-s")
-	cmd2 := exec.Command("sort", "-n")
+	pipeline := [][]string{[]string{"ls", "-s"}, []string{"sort", "-n"}}
+	var cmds []*exec.Cmd
+	for i, command := range pipeline {
+		cmds = append(cmds, exec.Command(command[0], command[1:]...))
+		if i > 0 {
+			cmds[i].Stdin, _ = cmds[i-1].StdoutPipe()
+		}
+	}
+	cmds[len(cmds)-1].Stdout = os.Stdout
 
-	cmd2.Stdin, _ = cmd1.StdoutPipe()
-	cmd2.Stdout = os.Stdout
-
-	cmd1.Start()
-	cmd2.Start()
-	cmd2.Wait()
+	for _, cmd := range cmds {
+		cmd.Start()
+	}
+	for _, cmd := range cmds {
+		cmd.Wait()
+	}
 }
